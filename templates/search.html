@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Search Result{% endblock %}
+
+{% block content %}
+<h1 class = 'display-1'>Search Result</h1>
+
+    {% for pet in pet_data['animals'] %}
+               <div class="card mb-3" style="max-width: 540px;">
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    {% if pet['photos'][0] %}
+                    <img src="{{pet['photos'][0]['full']}}" class="img-fluid rounded-start" alt="No Picture Available" height='450px'>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="/dogs/{{pet['id']}}" >{{pet['name']}}</a></h5>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Age: {{pet['age']}}</li>
+                        <li class="list-group-item">Gender: {{pet['gender']}}</li>
+                        <li class="list-group-item">Size: {{pet['size']}}</li>
+                        <li class="list-group-item">Status: {{pet['status']}}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+    {% endfor %}
+    
+    {% if pet_data['pagination']['_links']['previous'] %}
+    <form action=f'/pet{pet_data['pagination']['_links']['previous']['href']}'>
+      <button>Previous Page</button>
+    </form>
+    {% endif %}    
+    {% if pet_data['pagination']['_links']['next'] %}
+    <form action='/pet{{pet_data['pagination']['_links']['next']['href']}}'>
+      <button>Next Page</button>
+    </form>
+    {% endif %}
+
+    {{pet_data['pagination']}}
+    {{pet_data['pagination']['_links']['next']['href']}}
+    {{next_data}}
+    {{prev_data}}
+
+
+{% endblock %}
