@@ -3,13 +3,32 @@
 
 {% block content %}
 <h1 class = 'display-1'>Search Result</h1>
+    
+    {% if pet_data['pagination']['_links']['previous'] %}
+    <form id='login' action="/{{type}}s/page/{{prev_page}}" method = 'POST'>
+      {{ form.hidden_tag() }}
+
+        {% for field in form 
+        if field.widget.input_type != 'hidden' %}
+        <p>
+            {{field.label}}
+            {{field(class_='form-control')}}
+
+            {% for error in field.errors %}
+            <span class='form-text text-danger'>{{error}}</span>
+            {% endfor %}
+        </p>
+        {% endfor %}
+        <button class = 'btn btn-success' type='submit'>Previous Page</button>
+    </form>
+    {% endif %}
 
     {% for pet in pet_data['animals'] %}
-               <div class="card mb-3" style="max-width: 540px;">
+               <div class="card mb-3" style="max-width: auto; ">
                 <div class="row g-0">
                   <div class="col-md-4">
                     {% if pet['photos'][0] %}
-                    <img src="{{pet['photos'][0]['full']}}" class="img-fluid rounded-start" alt="No Picture Available" height='450px'>
+                    <img src="{{pet['photos'][0]['full']}}" class="img-fluid rounded-start" alt="No Picture Available" width = '300px ' height='450px'>
                     {% endif %}
                   </div>
                   <div class="col-md-8">
@@ -26,22 +45,27 @@
                 </div>
               </div>
     {% endfor %}
-    
-    {% if pet_data['pagination']['_links']['previous'] %}
-    <form action=f'/pet{pet_data['pagination']['_links']['previous']['href']}'>
-      <button>Previous Page</button>
-    </form>
-    {% endif %}    
+
     {% if pet_data['pagination']['_links']['next'] %}
-    <form action='/pet{{pet_data['pagination']['_links']['next']['href']}}'>
-      <button>Next Page</button>
-    </form>
+      <form id='login' action="/{{type}}s/page/{{next_page}}" method = 'POST'>
+        {{ form.hidden_tag() }}
+      
+          {% for field in form 
+          if field.widget.input_type != 'hidden' %}
+          <p>
+              {{field.label}}
+              {{field(class_='form-control')}}
+    
+              {% for error in field.errors %}
+              <span class='form-text text-danger'>{{error}}</span>
+              {% endfor %}
+          </p>
+          {% endfor %}
+          <button class = 'btn btn-success' type='submit'>Next Page</button>
+      </form>
     {% endif %}
 
-    {{pet_data['pagination']}}
-    {{pet_data['pagination']['_links']['next']['href']}}
-    {{next_data}}
-    {{prev_data}}
+
 
 
 {% endblock %}

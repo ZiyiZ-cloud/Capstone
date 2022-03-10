@@ -2,31 +2,31 @@
 {% block title %}YourPet{% endblock %}
 
 {% block content %}
-<h1>User Profile: {{user.username}}</h1>
+<h1> {{user.username}}'s User Profile</h1>
 <form style= 'display:inline' action='/user/{{user.username}}/delete' method='POST'>
     <button class='btn  btn-sm btn-danger'> Remove User</button>
     </form>
-<ul>
-    <li>
-        Username: {{user.username}}
-    </li>
-    <li>
-        Email: {{user.email}}
-    </li>
-    <li>
-        First Name: {{user.first_name}}
-    </li>
-    <li>
-        Last Name: {{user.last_name}}
-    </li>
-</ul>
+    <ul class="list-group" >
+      <li class="list-group-item">Username: <br>
+        {{user.username}}
+      </li>
+      <li class="list-group-item">Email: <br>
+        {{user.email}}
+      </li>
+      <li class="list-group-item">First Name: <br>
+        {{user.first_name}}
+      </li>
+      <li class="list-group-item">Last Name: <br>
+        {{user.last_name}}
+      </li>
+    </ul>
 
 
 {% for i in range(length) %}
-    <div class="card mb-3" style="max-width: 540px;">
+    <div class="card mb-3" style="max-width: auto;">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src={{likelist[i]['animal']['photos'][0]['full']}} class="img-fluid rounded-start" alt="...">
+            <img src={{likelist[i]['animal']['photos'][0]['full']}} class="img-fluid rounded-start" alt="..."  width = '300px ' height='300px'>
           </div>
           <div class="col-md-8">
             <div class="card-body">

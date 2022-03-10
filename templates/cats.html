@@ -5,7 +5,7 @@
 <h1>YourCat</h1>
 <p>This is the homepage for Cats!</p>
 
-<form id='login' method = 'POST'>
+<form id='login' action = '/cats/page/1' method = 'POST'>
     {{ form.hidden_tag() }}
 
     {% for field in form 

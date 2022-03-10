@@ -3,10 +3,7 @@
 
 {% block content %}
 
-{{userprofile}}
-
-
-<h2>{{pet_data['animal']['name']}}'s Profile {{pet_data['animal']['id']}}</h2>
+<h2>{{pet_data['animal']['name']}}'s Profile </h2>
 
 {% if session['username'] %}
 <form method="POST" action="/dogs/{{pet_data['animal']['id']}}/like" id="messages-form">
@@ -23,7 +20,7 @@
 {% endif %}
 
 
-<ul class="list-group">
+<ul class="list-group" >
     <li class="list-group-item">Breed: <br>
         {% if pet_data['animal']['breeds']['unknown'] == True %}
             No information in the breed.
@@ -85,7 +82,7 @@
 
 
 {% if session['username'] %}
-  <div class="card" style="width: 18rem;">
+  <div class="card" style="width: 18rem;width: 50%;margin: 0 auto;">
     <div class="card-body">
       <h5 class="card-title">Contact Information</h5>
         </div>

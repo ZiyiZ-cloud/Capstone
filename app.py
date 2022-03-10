@@ -1,11 +1,7 @@
-from http.client import UNAUTHORIZED
-from inspect import getmodule
 from sqlalchemy import null
-from flask import Flask, render_template, redirect, session, flash, jsonify
+from flask import Flask, render_template, redirect, session, flash, jsonify, request
 from flask_debugtoolbar import DebugToolbarExtension
-from werkzeug.exceptions import Unauthorized
 import requests, json
-
 
 from secret import API_KEY, API_SECRET
 from model import connect_db, db, User, Likes
@@ -109,6 +105,8 @@ def profile_page(username):
         if username == session['username']:
             user = User.query.get(username)
             likes = user.likes
+            # likelist will have all the pets that are liked by the user
+            # then call the data for each pet from api and show pet info in the user profile
             likelist = []
             for like in likes:
                 token_url = 'https://api.petfinder.com/v2/oauth2/token'
@@ -147,53 +145,10 @@ def delete_user(username):
     return redirect(f'/user/{username}')
 
 # page for dogs and cats search tabs #
-@app.route('/dogs', methods=['GET','POST'])
+@app.route('/dogs', methods=['GET'])
 def doghomepage():
    
     form = DogSearchForm()
-    if form.validate_on_submit():
-            address = form.address.data
-            radius = form.radius.data
-        
-            token_url = 'https://api.petfinder.com/v2/oauth2/token'
-            dog_url = f'https://api.petfinder.com/v2/animals?type=dog&location={address}&distance={radius}&limit=25&page=1'
-    
-            data = {'grant_type': 'client_credentials'}
-    
-            token_response = requests.post(token_url,data = data,verify = False,
-                         allow_redirects=False,auth=(API_KEY,API_SECRET))
-    
-            token = json.loads(token_response.text)
-    
-            api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
-
-            api_resp = requests.get(dog_url, headers=api_call_headers)
-
-            pet_data = api_resp.json()
-            
-            try: 
-                next_page = pet_data['pagination']['_links']['next']['href']
-                next_url = f'https://api.petfinder.com{next_page}'
-                api_next = requests.get(next_url, headers=api_call_headers)
-                next_data = api_next.json()
-            except:
-                next_data = []
-            try: 
-                prev_page = pet_data['pagination']['_links']['previous']['href']
-                prev_url = f'https://api.petfinder.com{prev_page}'
-                api_prev = requests.get(prev_url, headers=api_call_headers)
-                prev_data=api_prev.json()
-
-            except:
-                prev_data = []
-
-
-            try: 
-                userprofile = session['username']
-                user = User.query.get(userprofile)
-                return render_template('search.html',pet_data=pet_data,userprofile=userprofile,user=user,next_data=next_data,prev_data=prev_data)
-            except:
-                return render_template('search.html',pet_data=pet_data,next_data=next_data,prev_data=prev_data)
 
     try:
         userprofile = session['username']
@@ -202,63 +157,58 @@ def doghomepage():
     except:
         return render_template('dogs.html', form=form)
     
-@app.route('/pet')
-def dogpages():
-    
-    token_url = 'https://api.petfinder.com/v2/oauth2/token'
-    dog_url = f'https://api.petfinder.com//v2/animals?type=dog'
-
-    data = {'grant_type': 'client_credentials'}
-
-    token_response = requests.post(token_url,data = data,verify = False,
-                    allow_redirects=False,auth=(API_KEY,API_SECRET))
-
-    token = json.loads(token_response.text)
-
-    api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
-
-    api_resp = requests.get(dog_url, headers=api_call_headers)
-
-    pet_data = api_resp.json()
+# trying to do next page or previous page
+@app.route('/dogs/page/<int:page>',methods=['POST'])
+def dogpages(page):
+    try:
+        form = DogSearchForm()
+        if form.validate_on_submit():
+                address = form.address.data
+                radius = form.radius.data
+                #page = form.pagenumber.data
+                #this part is the search pet info from api using address and radius
+                token_url = 'https://api.petfinder.com/v2/oauth2/token'
+                dog_url = f'https://api.petfinder.com/v2/animals?type=dog&location={address}&distance={radius}&limit=25&page={page}'
         
-    return jsonify(pet_data)
-            
-            
+                data = {'grant_type': 'client_credentials'}
+        
+                token_response = requests.post(token_url,data = data,verify = False,
+                            allow_redirects=False,auth=(API_KEY,API_SECRET))
+        
+                token = json.loads(token_response.text)
+        
+                api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
 
-@app.route('/cats',methods=['GET','POST'])
+                api_resp = requests.get(dog_url, headers=api_call_headers)
+
+                pet_data = api_resp.json()
+                
+                next_page = int(page) + 1
+                prev_page = int(page) - 1
+                
+                type = pet_data['animals'][0]['type'].lower()
+                try: 
+                    userprofile = session['username']
+                    user = User.query.get(userprofile)
+                    return render_template('search.html',type=type,next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data,userprofile=userprofile,user=user)
+                except:
+                    return render_template('search.html',type=type,next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data)
+
+    except:
+        flash('No Pets Within the Radius. Please increase your search paramter!','danger')
+        try: 
+            userprofile = session['username']
+            user = User.query.get(userprofile)
+            return render_template('dogs.html', form=form,userprofile=userprofile) 
+        except:
+            return render_template('dogs.html', form=form)
+            
+            
+# this part is the search page and search result page for cats
+@app.route('/cats',methods=['GET'])
 def cathomepage():
     
     form = CatSearchForm()
-    if form.validate_on_submit():
-            address = form.address.data
-            radius = form.radius.data
-        
-            token_url = 'https://api.petfinder.com/v2/oauth2/token'
-            cat_url = f'https://api.petfinder.com/v2/animals?type=cat&location={address}&distance={radius}&limit=25&page=1'
-    
-            data = {'grant_type': 'client_credentials'}
-    
-            token_response = requests.post(token_url,data = data,verify = False,
-                         allow_redirects=False,auth=(API_KEY,API_SECRET))
-    
-            token = json.loads(token_response.text)
-    
-            api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
-
-            api_resp = requests.get(cat_url, headers=api_call_headers)
-
-            pet_data = api_resp.json()
-            
-            # if pet_data['pagination']['_links']['next'] :
-                
-            # if pet_data['pagination']['_links']['previous'] :
-    
-            try: 
-                userprofile = session['username']
-                user = User.query.get(userprofile)
-                return render_template('search.html',pet_data=pet_data,userprofile=userprofile,user=user)
-            except:
-                return render_template('search.html',pet_data=pet_data)
 
     try:
         userprofile = session['username']
@@ -266,11 +216,59 @@ def cathomepage():
         return render_template('cats.html', form=form,userprofile=userprofile,user=user)
     except:
         return render_template('cats.html', form=form)   
+    
+    
+@app.route('/cats/page/<int:page>',methods=['POST'])
+def catpages(page):
+    try:
+        form = CatSearchForm()
+        if form.validate_on_submit():
+                address = form.address.data
+                radius = form.radius.data
+                #this part is the search pet info from api using address and radius
+                token_url = 'https://api.petfinder.com/v2/oauth2/token'
+                dog_url = f'https://api.petfinder.com/v2/animals?type=cat&location={address}&distance={radius}&limit=25&page={page}'
+        
+                data = {'grant_type': 'client_credentials'}
+        
+                token_response = requests.post(token_url,data = data,verify = False,
+                            allow_redirects=False,auth=(API_KEY,API_SECRET))
+        
+                token = json.loads(token_response.text)
+        
+                api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
+
+                api_resp = requests.get(dog_url, headers=api_call_headers)
+
+                pet_data = api_resp.json()
+                
+                next_page = int(page) + 1
+                prev_page = int(page) - 1
+
+                    
+                type = pet_data['animals'][0]['type'].lower()
+
+                try: 
+                    userprofile = session['username']
+                    user = User.query.get(userprofile)
+                    return render_template('search.html',type=type,next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data,userprofile=userprofile,user=user)
+                except:
+                    return render_template('search.html',type=type,next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data)
+
+    except:
+        flash('No Pets Within the Radius. Please increase your search paramter!','danger')
+        try: 
+            userprofile = session['username']
+            user = User.query.get(userprofile)
+            return render_template('cats.html', form=form,userprofile=userprofile)
+        except:
+            return render_template('cats.html', form=form)
 
 # pet profile page 
 
 @app.route('/dogs/<int:dog_id>')
 def dogprofile(dog_id):
+    # get pet information through api call on the dog id
     token_url = 'https://api.petfinder.com/v2/oauth2/token'
     dog_url = f'https://api.petfinder.com/v2/animals/{dog_id}'
     
@@ -295,6 +293,7 @@ def dogprofile(dog_id):
 
 @app.route('/cats/<int:cat_id>')
 def catprofile(cat_id):
+    # get pet information through api call on the dog id
     token_url = 'https://api.petfinder.com/v2/oauth2/token'
     cat_url = f'https://api.petfinder.com/v2/animals/{cat_id}'
     
@@ -320,9 +319,13 @@ def catprofile(cat_id):
 # add and remove like on dogs
 @app.route('/dogs/<int:dog_id>/like',methods=['POST'])
 def doglike(dog_id):
+    # if not logged in cannot like the dog
+    # also have a part in html that will not show button if not logged in
     if "username" not in session:
         flash("You need to log in first to add this pet to your list", "danger")
         return redirect(f"/dogs/{dog_id}")
+    # if not liked before, add a new column with user id and pet id
+    # if already liked, show flash message and refresh the page
     try:
         userprofile = User.query.get(session['username'])
     
@@ -339,6 +342,8 @@ def doglike(dog_id):
 
 @app.route('/dogs/<int:dog_id>/dislike',methods=['POST'])
 def dogdislike(dog_id):
+    # if not logged in cannot dislike the dog
+    # also have a part in html that will not show button if not logged in
     if "username" not in session:
         flash("You need to log in first to remove this pet from your list.", "danger")
         return redirect(f"/dogs/{dog_id}")
@@ -426,3 +431,90 @@ def apitest():
     pet_data = api_resp.json()
     
     return jsonify(pet_data)
+
+
+# # page for dogs and cats search tabs #
+# @app.route('/dogs', methods=['GET'])
+# def doghomepage():
+   
+#     form = DogSearchForm()
+#     # if form.validate_on_submit():
+#     #         address = form.address.data
+#     #         radius = form.radius.data
+#     #         current_page = form.pagenumber.data
+#     #         #this part is the search pet info from api using address and radius
+#     #         token_url = 'https://api.petfinder.com/v2/oauth2/token'
+#     #         dog_url = f'https://api.petfinder.com/v2/animals?type=dog&location={address}&distance={radius}&limit=25&page={current_page}'
+    
+#     #         data = {'grant_type': 'client_credentials'}
+    
+#     #         token_response = requests.post(token_url,data = data,verify = False,
+#     #                      allow_redirects=False,auth=(API_KEY,API_SECRET))
+    
+#     #         token = json.loads(token_response.text)
+    
+#     #         api_call_headers = {'Authorization': 'Bearer ' + token['access_token']}
+
+#     #         api_resp = requests.get(dog_url, headers=api_call_headers)
+
+#     #         pet_data = api_resp.json()
+            
+#     #         next_page = int(current_page) + 1
+#     #         prev_page = int(current_page) - 1
+                
+#     #         try:
+#     #             try: 
+#     #                 userprofile = session['username']
+#     #                 user = User.query.get(userprofile)
+#     #                 return render_template('search.html',next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data,userprofile=userprofile,user=user)
+#     #             except:
+#     #                 return render_template('search.html',next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data)
+
+#     #         except:
+#     #             flash('No Pets Within the Radius. Please increase your search paramter!','danger')
+#     #             try: 
+#     #                 userprofile = session['username']
+#     #                 user = User.query.get(userprofile) 
+#     #             except:
+#     #                 return render_template('dogs.html', form=form)
+    
+    
+#             # this two tries show the information for the pets in the previous page and next page
+#             # try: 
+#             #     next_page = pet_data['pagination']['_links']['next']['href']
+#             #     next_url = f'https://api.petfinder.com{next_page}'
+#             #     api_next = requests.get(next_url, headers=api_call_headers)
+#             #     next_data = api_next.json()
+#             # except:
+#             #     next_data = []
+#             # try: 
+#             #     prev_page = pet_data['pagination']['_links']['previous']['href']
+#             #     prev_url = f'https://api.petfinder.com{prev_page}'
+#             #     api_prev = requests.get(prev_url, headers=api_call_headers)
+#             #     prev_data=api_prev.json()
+#             # except:
+#             #     prev_data = []
+                
+                
+#             #     {{pet_data['pagination']}}
+#             #     {{pet_data['pagination']['_links']['next']['href']}}
+#             #     {{next_data}}
+#             #     {{prev_data}}
+
+#             # this part check if user is logged in or not, then show the search result
+#             # if logged in, user can visit user profile page or log out.
+                
+#                 # try: 
+#                 #     userprofile = session['username']
+#                 #     user = User.query.get(userprofile)
+#                 #     return render_template('search.html',next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data,userprofile=userprofile,user=user)
+#                 # except:
+#                 #     return render_template('search.html',next_page=next_page,prev_page=prev_page,form=form,pet_data=pet_data)
+
+#     try:
+#         userprofile = session['username']
+#         user = User.query.get(userprofile)
+#         return render_template('dogs.html', form=form,userprofile=userprofile)
+#     except:
+#         return render_template('dogs.html', form=form)
+    

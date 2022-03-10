@@ -1,0 +1,11 @@
+body {
+    margin-left: 10% auto;
+    margin-right: 10% auto;
+    text-align: center;
+}
+
+.form-control {
+    box-sizing: border-box;
+    width: 500px;
+    margin: auto;
+}

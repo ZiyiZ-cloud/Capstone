@@ -1,7 +1,7 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, EmailField, PasswordField
-from wtforms.validators import InputRequired, Optional, URL, NumberRange, AnyOf
+from wtforms import StringField, IntegerField, EmailField, PasswordField, HiddenField
+from wtforms.validators import InputRequired
 
 
 class RegisterForm(FlaskForm):
@@ -30,14 +30,14 @@ class LoginForm(FlaskForm):
 
 class DogSearchForm(FlaskForm):
     
-    address = StringField('Enter City, State or Zipcode',
+    address = IntegerField('Enter Zipcode',
                            validators = [InputRequired()])
     radius = IntegerField('Enter the radius',
                           validators = [InputRequired()])
 
 class CatSearchForm(FlaskForm):
     
-    address = StringField('Enter City, State or Zipcode',
+    address = IntegerField('Enter Zipcode',
                            validators = [InputRequired()])
     radius = IntegerField('Enter the radius',
                           validators = [InputRequired()])
