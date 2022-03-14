@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}YourPet{% endblock %}
+{% block title %}UserProfile{% endblock %}
 
 {% block content %}
 <h1> {{user.username}}'s User Profile</h1>
@@ -26,7 +26,7 @@
     <div class="card mb-3" style="max-width: auto;">
         <div class="row g-0">
           <div class="col-md-4">
-            <img src={{likelist[i]['animal']['photos'][0]['full']}} class="img-fluid rounded-start" alt="..."  width = '300px ' height='300px'>
+            <img src={{likelist[i]['animal']['photos'][0]['full']}} class="img-thumbnail" alt="..."  width = '300px ' height='300px'>
           </div>
           <div class="col-md-8">
             <div class="card-body">
