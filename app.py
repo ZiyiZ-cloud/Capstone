@@ -2,8 +2,9 @@ from sqlalchemy import null
 from flask import Flask, render_template, redirect, session, flash, jsonify, request
 from flask_debugtoolbar import DebugToolbarExtension
 import requests, json
+import os
 
-from secret import API_KEY, API_SECRET
+# from secret import API_KEY, API_SECRET
 from model import connect_db, db, User, Likes
 from forms import RegisterForm, LoginForm, DogSearchForm, CatSearchForm
 
@@ -24,6 +25,9 @@ connect_db(app)
 db.create_all()
 
 toolbar = DebugToolbarExtension(app)
+
+API_KEY = os.environ.get('api_key')
+SECRET = os.environ.get('api_secret')
 
 
 @app.route('/')
@@ -431,3 +435,4 @@ def apitest():
     pet_data = api_resp.json()
     
     return jsonify(pet_data)
+

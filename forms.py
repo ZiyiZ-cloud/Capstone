@@ -18,8 +18,6 @@ class RegisterForm(FlaskForm):
                         validators = [InputRequired()])
     
     
-    
-    
 class LoginForm(FlaskForm):
     
     username = StringField('Username',
