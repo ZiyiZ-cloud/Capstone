@@ -17,6 +17,5 @@ Petfinder data: https://www.petfinder.com/developers/v2/docs/
 
 ## Technology Used:
 * Python
-* JavaScript
 * Bootstrap
 
