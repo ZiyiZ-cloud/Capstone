@@ -8,6 +8,8 @@ This will provide a list of results back to user with basic information for the 
 
 For each pet, users can view all available photos, basic info, attributes, and contact information. 
 
+The web allow user to access the pets information as guest or logged in user.
+
 The guest can access most of the pets' information except the contact information to reach out to the adoption center. 
 
 Once logged in, user would be able to see the contact information and also add their favorite ones into the personal list that is available to broswer in the userprofile page.
