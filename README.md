@@ -16,7 +16,7 @@ Once logged in, user would be able to see the contact information and also add t
 Petfinder data: https://www.petfinder.com/developers/v2/docs/
 
 ## Technology Used:
-Python
-JavaScript
-Bootstrap
+* Python
+* JavaScript
+* Bootstrap
 
