@@ -18,6 +18,12 @@ Once logged in, user would be able to see the contact information and also add t
 Petfinder data: https://www.petfinder.com/developers/v2/docs/
 
 ## Technology Used:
-* Python
-* Bootstrap
+* Python/Flask,
+* PostgreSQL
+* SQLAlchemy
+* Heroku
+* RESTful APIs
+* HTML
+* CSS
+* WTForms
 
